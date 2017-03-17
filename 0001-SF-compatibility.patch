@@ -1,0 +1,45 @@
+From 9ac3c5169bcfd347231fe911c0b3cd3e15c62289 Mon Sep 17 00:00:00 2001
+From: Fabien Boucher <fboucher@redhat.com>
+Date: Fri, 17 Mar 2017 15:46:13 +0000
+Subject: [PATCH] SF compatibility
+
+---
+ files/log-gearman-client.py | 8 +++++---
+ 1 file changed, 5 insertions(+), 3 deletions(-)
+
+diff --git a/files/log-gearman-client.py b/files/log-gearman-client.py
+index 37a0c96..f2387cc 100644
+--- a/files/log-gearman-client.py
++++ b/files/log-gearman-client.py
+@@ -97,8 +97,9 @@ class EventProcessor(threading.Thread):
+                 logging.exception("Exception submitting job to Gearman.")
+ 
+     def _get_log_dir(self, event):
+-        parameters = event["build"].get("parameters", {})
+-        base = parameters.get('LOG_PATH', 'UNKNOWN')
++        #parameters = event["build"].get("parameters", {})
++        #base = parameters.get('LOG_PATH', 'UNKNOWN')
++        base = event["build"].get("url", 'UKNOWN')
+         return base
+ 
+     def _parse_fields(self, event, filename):
+@@ -168,7 +169,7 @@ class Server(object):
+     def setup_processors(self):
+         for publisher in self.config['zmq-publishers']:
+             gearclient = gear.Client()
+-            gearclient.addServer('localhost')
++            gearclient.addServer('localhost', port=4731)
+             gearclient.waitForServer()
+             log_processor = EventProcessor(
+                 publisher, gearclient,
+@@ -199,6 +200,7 @@ class Server(object):
+         if statsd_host:
+             self.wait_for_name_resolution(statsd_host, statsd_port)
+         self.gearserver = gear.Server(
++            port=4731,
+             statsd_host=statsd_host,
+             statsd_port=statsd_port,
+             statsd_prefix=statsd_prefix)
+-- 
+1.8.3.1
+
