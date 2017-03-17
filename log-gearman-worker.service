@@ -1,0 +1,14 @@
+[Unit]
+Description=Job logs gearman worker
+After=syslog.target network.target
+
+[Service]
+Type=simple
+User=joblogsworker
+Group=joblogsworker
+SyslogIdentifier=joblogs-gearman-worker
+ExecStart=/usr/bin/log-gearman-worker.py -c /etc/log-gearman-worker/config.yml --foreground -d /var/log/log-gearman-worker/worker.log
+
+[Install]
+WantedBy=multi-user.target
+
