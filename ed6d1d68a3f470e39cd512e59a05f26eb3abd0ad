@@ -1,0 +1,55 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "5a72e520_07d88d1c",
+        "filename": "0001-SF-compatibility.patch",
+        "patchSetId": 2
+      },
+      "lineNbr": 16,
+      "author": {
+        "id": 68
+      },
+      "writtenOn": "2017-03-21T09:47:41Z",
+      "side": 1,
+      "message": "(nit) trailing spaces",
+      "revId": "ed6d1d68a3f470e39cd512e59a05f26eb3abd0ad",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5a72e520_4709a594",
+        "filename": "python-log2gearman.spec",
+        "patchSetId": 2
+      },
+      "lineNbr": 27,
+      "author": {
+        "id": 68
+      },
+      "writtenOn": "2017-03-21T09:47:41Z",
+      "side": 1,
+      "message": "should it be python-log2gearman-client? or does rpmbuild magically figure out the package name?",
+      "revId": "ed6d1d68a3f470e39cd512e59a05f26eb3abd0ad",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5a72e520_2704a97d",
+        "filename": "python-log2gearman.spec",
+        "patchSetId": 2
+      },
+      "lineNbr": 35,
+      "author": {
+        "id": 68
+      },
+      "writtenOn": "2017-03-21T09:47:41Z",
+      "side": 1,
+      "message": "(nit) writing, typo occurs several times",
+      "revId": "ed6d1d68a3f470e39cd512e59a05f26eb3abd0ad",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
