@@ -5,7 +5,7 @@
 
 Name:           python-log2gearman
 Version:        0.1
-Release:        1.%{checkout}%{dist}
+Release:        2.%{checkout}%{dist}
 Summary:        Python tools for writing/consuming log export tasks from Jenkins to Logstash
 
 License:        ASL 2.0
@@ -104,5 +104,8 @@ exit 0
 %systemd_postun log-gearman-worker.service
 
 %changelog
+* Mon May 15 2017 Tristan Cacqueray <tdecacqu@redhat.com> - 0.1-2.20170317git3aa0ef4
+- Update SF compatibility patch
+
 * Fri Mar 17 2017 Fabien Boucher <fboucher@redhat.com> - 0.1-1.20170317git3aa0ef4
 - Initial packaging

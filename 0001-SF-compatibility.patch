@@ -1,29 +1,39 @@
-From 9ac3c5169bcfd347231fe911c0b3cd3e15c62289 Mon Sep 17 00:00:00 2001
+From 6d0faa8bb3689199990444de24d65c8d27c6f5fa Mon Sep 17 00:00:00 2001
 From: Fabien Boucher <fboucher@redhat.com>
 Date: Fri, 17 Mar 2017 15:46:13 +0000
 Subject: [PATCH] SF compatibility
 
 ---
- files/log-gearman-client.py | 8 +++++---
- 1 file changed, 5 insertions(+), 3 deletions(-)
+ files/log-gearman-client.py | 18 +++++++++++++++---
+ 1 file changed, 15 insertions(+), 3 deletions(-)
 
 diff --git a/files/log-gearman-client.py b/files/log-gearman-client.py
-index 37a0c96..f2387cc 100644
+index 37a0c96..5c0ab8c 100644
 --- a/files/log-gearman-client.py
 +++ b/files/log-gearman-client.py
-@@ -97,8 +97,9 @@ class EventProcessor(threading.Thread):
-                 logging.exception("Exception submitting job to Gearman.")
+@@ -98,8 +98,19 @@ class EventProcessor(threading.Thread):
  
      def _get_log_dir(self, event):
--        parameters = event["build"].get("parameters", {})
+         parameters = event["build"].get("parameters", {})
 -        base = parameters.get('LOG_PATH', 'UNKNOWN')
-+        #parameters = event["build"].get("parameters", {})
-+        #base = parameters.get('LOG_PATH', 'UNKNOWN')
-+        base = event["build"].get("url", 'UKNOWN')
-         return base
+-        return base
++        jenkins_url = event["build"].get("url")
++        if jenkins_url:
++            log_dir = "jenkins/%s" % jenkins_url
++        else:
++            log_dir = "logs-raw/results/%s/%s-%s,%s-%s-%s" % (
++                event.get("name"),
++                parameters.get("ZUUL_PROJECT"),
++                parameters.get("ZUUL_CHANGE", "0"),
++                parameters.get("ZUUL_PATCHSET", "0"),
++                parameters.get("ZUUL_PIPELINE"),
++                parameters.get("ZUUL_UUID"),
++            )
++        return log_dir
  
      def _parse_fields(self, event, filename):
-@@ -168,7 +169,7 @@ class Server(object):
+         fields = {}
+@@ -168,7 +179,7 @@ class Server(object):
      def setup_processors(self):
          for publisher in self.config['zmq-publishers']:
              gearclient = gear.Client()
@@ -32,7 +42,7 @@ index 37a0c96..f2387cc 100644
              gearclient.waitForServer()
              log_processor = EventProcessor(
                  publisher, gearclient,
-@@ -199,6 +200,7 @@ class Server(object):
+@@ -199,6 +210,7 @@ class Server(object):
          if statsd_host:
              self.wait_for_name_resolution(statsd_host, statsd_port)
          self.gearserver = gear.Server(
