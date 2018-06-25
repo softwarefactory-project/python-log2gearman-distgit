@@ -1,11 +1,11 @@
-%global         commit0 3aa0ef430534c4d467d3e09f45333fea11f71b95
+%global         commit0 c646602e201cbdb7bfa2d3011e57adf69c242af2
 %global         shortcommit0 %(c=%{commit0}; echo ${c:0:7})
-%global         checkout 20170317git%{shortcommit0}
+%global         checkout 20171211git%{shortcommit0}
 %global         uname puppet-log_processor
 
 Name:           python-log2gearman
 Version:        0.1
-Release:        2.%{checkout}%{dist}
+Release:        3.%{checkout}%{dist}
 Summary:        Python tools for writing/consuming log export tasks from Jenkins to Logstash
 
 License:        ASL 2.0
@@ -104,6 +104,9 @@ exit 0
 %systemd_postun log-gearman-worker.service
 
 %changelog
+* Mon Jun 25 2018 Tristan Cacqueray <tdecacqu@redhat.com> - 0.1-3
+- Bump version
+
 * Mon May 15 2017 Tristan Cacqueray <tdecacqu@redhat.com> - 0.1-2.20170317git3aa0ef4
 - Update SF compatibility patch
 
