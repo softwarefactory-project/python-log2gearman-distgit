@@ -1,0 +1,93 @@
+From b5390dabebea6bacf4599d3724e85e0e03da813f Mon Sep 17 00:00:00 2001
+From: Tristan Cacqueray <tdecacqu@redhat.com>
+Date: Tue, 11 Dec 2018 09:28:32 +0000
+Subject: [PATCH] Do not import daemon in forground
+
+Change-Id: Ic0fffbd44a809b5407f7f92294e4d2b6fda50e48
+---
+ files/log-gearman-client.py | 12 +++++-------
+ files/log-gearman-worker.py | 11 +++++------
+ 2 files changed, 10 insertions(+), 13 deletions(-)
+ mode change 100644 => 100755 files/log-gearman-client.py
+ mode change 100644 => 100755 files/log-gearman-worker.py
+
+diff --git a/files/log-gearman-client.py b/files/log-gearman-client.py
+old mode 100644
+new mode 100755
+index f2460b6..bd40b4d
+--- a/files/log-gearman-client.py
++++ b/files/log-gearman-client.py
+@@ -15,7 +15,6 @@
+ # under the License.
+ 
+ import argparse
+-import daemon
+ import gear
+ import json
+ import logging
+@@ -30,12 +29,6 @@ import yaml
+ import zmq
+ 
+ 
+-try:
+-    import daemon.pidlockfile as pidfile_mod
+-except ImportError:
+-    import daemon.pidfile as pidfile_mod
+-
+-
+ class EventProcessor(threading.Thread):
+     def __init__(self, zmq_address, gearman_client, files, source_url):
+         threading.Thread.__init__(self)
+@@ -239,6 +232,11 @@ def main():
+         server.setup_logging()
+         server.main()
+     else:
++        import daemon
++        try:
++            import daemon.pidlockfile as pidfile_mod
++        except ImportError:
++            import daemon.pidfile as pidfile_mod
+         pidfile = pidfile_mod.TimeoutPIDLockFile(args.pidfile, 10)
+         with daemon.DaemonContext(pidfile=pidfile):
+             server.setup_logging()
+diff --git a/files/log-gearman-worker.py b/files/log-gearman-worker.py
+old mode 100644
+new mode 100755
+index 491b697..8ed81b7
+--- a/files/log-gearman-worker.py
++++ b/files/log-gearman-worker.py
+@@ -16,7 +16,6 @@
+ 
+ import argparse
+ import cStringIO
+-import daemon
+ import gear
+ import gzip
+ import json
+@@ -35,11 +34,6 @@ import yaml
+ 
+ import paho.mqtt.publish as publish
+ 
+-try:
+-    import daemon.pidlockfile as pidfile_mod
+-except ImportError:
+-    import daemon.pidfile as pidfile_mod
+-
+ 
+ def semi_busy_wait(seconds):
+     # time.sleep() may return early. If it does sleep() again and repeat
+@@ -525,6 +519,11 @@ def main():
+         server.setup_logging()
+         server.main()
+     else:
++        import daemon
++        try:
++            import daemon.pidlockfile as pidfile_mod
++        except ImportError:
++            import daemon.pidfile as pidfile_mod
+         pidfile = pidfile_mod.TimeoutPIDLockFile(args.pidfile, 10)
+         with daemon.DaemonContext(pidfile=pidfile):
+             server.setup_logging()
+-- 
+2.18.1
+

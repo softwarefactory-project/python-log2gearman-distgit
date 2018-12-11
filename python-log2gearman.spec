@@ -5,7 +5,7 @@
 
 Name:           python-log2gearman
 Version:        0.1
-Release:        4.%{checkout}%{dist}
+Release:        5.%{checkout}%{dist}
 Summary:        Python tools for writing/consuming log export tasks from Jenkins to Logstash
 
 License:        ASL 2.0
@@ -15,6 +15,7 @@ Source1:        log-gearman-client.service
 Source2:        log-gearman-worker.service
 
 Patch0:         0001-SF-compatibility.patch
+Patch1:         0001-Do-not-import-daemon-in-forground.patch
 
 BuildArch:      noarch
 
@@ -28,7 +29,6 @@ Python tools for writing/consuming log export tasks from Jenkins to Logstash
 Summary: Python tools for writing log export tasks from Jenkins to Logstash
 Requires:       python-gear
 Requires:       PyYAML
-Requires:       python-daemon
 Requires:       python-zmq
 
 %description client
@@ -38,7 +38,6 @@ Python tools for writing log export tasks from Jenkins to Logstash
 Summary: Python tools for consuming log export tasks from Jenkins to Logstash
 Requires:       python-gear
 Requires:       PyYAML
-Requires:       python-daemon
 Requires:       python-zmq
 Requires:       python-paho-mqtt
 
@@ -105,6 +104,9 @@ exit 0
 %systemd_postun log-gearman-worker.service
 
 %changelog
+* Tue Dec 11 2018 Tristan Cacqueray <tdecacqu@redhat.com> - 0.1-5
+- Remove python-daemon
+
 * Thu Aug 23 2018 Tristan Cacqueray <tdecacqu@redhat.com> - 0.1-4
 - Add missing paho-mqtt worker requirement
 
