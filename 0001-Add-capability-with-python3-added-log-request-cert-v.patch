@@ -1,0 +1,160 @@
+From bb7e30676b491715dfcb4c4abbbc172192e83eac Mon Sep 17 00:00:00 2001
+From: Daniel Pawlik <dpawlik@redhat.com>
+Date: Mon, 20 Sep 2021 12:23:38 +0200
+Subject: [PATCH] Add capability with python3; added log request cert verify
+
+With that commit, new option will be available for log-gearman-worker:
+log-ca-certs and log-cert-verify. In param log-ca-certs you
+can set path to ca-cert bundle that python request can verify cert
+on request. Parameter log-cert-verify (by default is set to True) is
+validating certificate. On setting that to False, python request will
+not validate certificate (not secure).
+Both options are optional.
+Besides that, added 'gearman-port' option for log-gearman-client.
+By default, it is set to 4731.
+
+Change-Id: I88920c4ccd9b34e06677d7e11eaeec310e7476fd
+---
+ files/log-gearman-client.py |  9 +++++----
+ files/log-gearman-worker.py | 29 +++++++++++++++++++++--------
+ 2 files changed, 26 insertions(+), 12 deletions(-)
+
+diff --git a/files/log-gearman-client.py b/files/log-gearman-client.py
+index bd40b4d..55fc828 100644
+--- a/files/log-gearman-client.py
++++ b/files/log-gearman-client.py
+@@ -1,4 +1,4 @@
+-#!/usr/bin/python2
++#!/usr/bin/python3
+ #
+ # Copyright 2013 Hewlett-Packard Development Company, L.P.
+ #
+@@ -165,7 +165,8 @@ class Server(object):
+     def setup_processors(self):
+         for publisher in self.config['zmq-publishers']:
+             gearclient = gear.Client()
+-            gearclient.addServer('localhost', port=4731)
++            gearclient.addServer('localhost',
++                                 port=self.config.get('gearman-port', 4731))
+             gearclient.waitForServer()
+             log_processor = EventProcessor(
+                 publisher, gearclient,
+@@ -196,7 +197,7 @@ class Server(object):
+         if statsd_host:
+             self.wait_for_name_resolution(statsd_host, statsd_port)
+         self.gearserver = gear.Server(
+-            port=4731,
++            port=self.config.get('gearman-port', 4731),
+             statsd_host=statsd_host,
+             statsd_port=statsd_port,
+             statsd_prefix=statsd_prefix)
+@@ -225,7 +226,7 @@ def main():
+     args = parser.parse_args()
+ 
+     with open(args.config, 'r') as config_stream:
+-        config = yaml.load(config_stream)
++        config = yaml.safe_load(config_stream)
+     server = Server(config, args.debuglog)
+ 
+     if args.foreground:
+diff --git a/files/log-gearman-worker.py b/files/log-gearman-worker.py
+index 954e342..c93bb06 100644
+--- a/files/log-gearman-worker.py
++++ b/files/log-gearman-worker.py
+@@ -1,4 +1,4 @@
+-#!/usr/bin/python2
++#!/usr/bin/python3
+ #
+ # Copyright 2013 Hewlett-Packard Development Company, L.P.
+ #
+@@ -19,7 +19,7 @@ import gear
+ import json
+ import logging
+ import os
+-import Queue
++import queue
+ import re
+ import requests
+ import select
+@@ -190,12 +190,15 @@ class SystemdSeverityFilterFactory(object):
+ 
+ 
+ class LogRetriever(threading.Thread):
+-    def __init__(self, gearman_worker, filters, logq, mqtt=None):
++    def __init__(self, gearman_worker, filters, logq,
++                 log_cert_verify, log_ca_certs, mqtt=None):
+         threading.Thread.__init__(self)
+         self.gearman_worker = gearman_worker
+         self.filters = filters
+         self.logq = logq
+         self.mqtt = mqtt
++        self.log_cert_verify = log_cert_verify
++        self.log_ca_certs = log_ca_certs
+ 
+     def run(self):
+         while True:
+@@ -296,13 +299,20 @@ class LogRetriever(threading.Thread):
+ 
+     def _open_log_file_url(self, source_url):
+         file_obj = None
++
++        kwargs = {}
++        if self.log_cert_verify and self.log_ca_certs:
++            kwargs['verify'] = self.log_ca_certs
++        elif not self.log_cert_verify:
++            kwargs['verify'] = self.log_cert_verify
++
+         try:
+             logging.debug("Retrieving: " + source_url)
+             # Use a session to persist the HTTP connection across requests
+             # while downloading chunks of the log file.
+             session = requests.Session()
+             session.headers = {'Accept-encoding': 'deflate, gzip'}
+-            file_obj = session.get(source_url, stream=True)
++            file_obj = session.get(source_url, stream=True, **kwargs)
+             file_obj.raise_for_status()
+         except requests.HTTPError as e:
+             if e.response.status_code == 404:
+@@ -422,10 +432,12 @@ class Server(object):
+         mqtt_ca_certs = self.config.get('mqtt-ca-certs')
+         mqtt_certfile = self.config.get('mqtt-certfile')
+         mqtt_keyfile = self.config.get('mqtt-keyfile')
++        self.log_ca_certs = self.config.get('log-ca-certs')
++        self.log_cert_verify = self.config.get('log-cert-verify', True)
+         # Pythong logging output file.
+         self.debuglog = debuglog
+         self.retriever = None
+-        self.logqueue = Queue.Queue(16384)
++        self.logqueue = queue.Queue(16384)
+         self.processor = None
+         self.filter_factories = []
+         # Run the severity filter first so it can filter out chatty
+@@ -477,13 +489,14 @@ class Server(object):
+ 
+     def setup_retriever(self):
+         hostname = socket.gethostname()
+-        gearman_worker = gear.Worker(hostname + b'-pusher')
++        gearman_worker = gear.Worker(hostname + '-pusher')
+         self.wait_for_name_resolution(self.gearman_host, self.gearman_port)
+         gearman_worker.addServer(self.gearman_host,
+                                  self.gearman_port)
+         gearman_worker.registerFunction(b'push-log')
+         self.retriever = LogRetriever(gearman_worker, self.filter_factories,
+-                                      self.logqueue, mqtt=self.mqtt)
++                                      self.logqueue, self.log_cert_verify,
++                                      self.log_ca_certs, mqtt=self.mqtt)
+ 
+     def setup_processor(self):
+         if self.output_mode == "tcp":
+@@ -530,7 +543,7 @@ def main():
+     args = parser.parse_args()
+ 
+     with open(args.config, 'r') as config_stream:
+-        config = yaml.load(config_stream)
++        config = yaml.safe_load(config_stream)
+     server = Server(config, args.debuglog)
+ 
+     if args.foreground:
+-- 
+2.31.1
+

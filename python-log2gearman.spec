@@ -1,25 +1,26 @@
-%global         commit0 c646602e201cbdb7bfa2d3011e57adf69c242af2
+%global         commit0 89bfe00dda0b9761bd79b0aa1ac2092940f0f11d
 %global         shortcommit0 %(c=%{commit0}; echo ${c:0:7})
-%global         checkout 20171211git%{shortcommit0}
+%global         checkout 20201022git%{shortcommit0}
 %global         uname puppet-log_processor
 
 Name:           python-log2gearman
 Version:        0.1
-Release:        5.%{checkout}%{dist}
+Release:        6.%{checkout}%{dist}
 Summary:        Python tools for writing/consuming log export tasks from Jenkins to Logstash
 
 License:        ASL 2.0
-URL:            https://github.com/openstack-infra/${uname}
-Source0:        https://github.com/openstack-infra/%{uname}/archive/%{commit0}.tar.gz
+URL:            https://opendev.org/opendev/${uname}
+Source0:        https://opendev.org/opendev/%{uname}/archive/%{commit0}.tar.gz
 Source1:        log-gearman-client.service
 Source2:        log-gearman-worker.service
 
 Patch0:         0001-SF-compatibility.patch
 Patch1:         0001-Do-not-import-daemon-in-forground.patch
+Patch2:         0001-Add-capability-with-python3-added-log-request-cert-v.patch
 
 BuildArch:      noarch
 
-Buildrequires:  python2-devel
+Buildrequires:  python3-devel
 BuildRequires:  systemd
 
 %description
@@ -27,25 +28,29 @@ Python tools for writing/consuming log export tasks from Jenkins to Logstash
 
 %package client
 Summary: Python tools for writing log export tasks from Jenkins to Logstash
-Requires:       python-gear
+Requires:       python3-gear
+Requires:       python3-pbr
+Requires:       python3-extras
 Requires:       PyYAML
-Requires:       python-zmq
+Requires:       python3-zmq
 
 %description client
 Python tools for writing log export tasks from Jenkins to Logstash
 
 %package worker
 Summary: Python tools for consuming log export tasks from Jenkins to Logstash
-Requires:       python-gear
+Requires:       python3-gear
+Requires:       python3-pbr
+Requires:       python3-extras
 Requires:       PyYAML
-Requires:       python-zmq
-Requires:       python-paho-mqtt
+Requires:       python3-zmq
+Requires:       python3-paho-mqtt
 
 %description worker
 Python tools for consuming log export tasks from Jenkins to Logstash
 
 %prep
-%autosetup -n %{uname}-%{commit0} -p1
+%autosetup -n %{uname} -p1
 
 %build
 
@@ -104,6 +109,11 @@ exit 0
 %systemd_postun log-gearman-worker.service
 
 %changelog
+* Thu Sep 09 2021 Daniel Pawlik <dpawlik@redhat.com> - 0.1-6
+- Bump to commit 89bfe00dda0b9761bd79b0aa1ac2092940f0f11d
+- Add requirements
+- Change interpreter to python3
+
 * Tue Dec 11 2018 Tristan Cacqueray <tdecacqu@redhat.com> - 0.1-5
 - Remove python-daemon
 

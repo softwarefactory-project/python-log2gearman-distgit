@@ -1,20 +1,15 @@
-From b5390dabebea6bacf4599d3724e85e0e03da813f Mon Sep 17 00:00:00 2001
+From 948d4c74c36bfb18c8da39749ba220db55dbfd45 Mon Sep 17 00:00:00 2001
 From: Tristan Cacqueray <tdecacqu@redhat.com>
 Date: Tue, 11 Dec 2018 09:28:32 +0000
 Subject: [PATCH] Do not import daemon in forground
 
-Change-Id: Ic0fffbd44a809b5407f7f92294e4d2b6fda50e48
 ---
  files/log-gearman-client.py | 12 +++++-------
  files/log-gearman-worker.py | 11 +++++------
  2 files changed, 10 insertions(+), 13 deletions(-)
- mode change 100644 => 100755 files/log-gearman-client.py
- mode change 100644 => 100755 files/log-gearman-worker.py
 
 diff --git a/files/log-gearman-client.py b/files/log-gearman-client.py
-old mode 100644
-new mode 100755
-index f2460b6..bd40b4d
+index f2460b6..bd40b4d 100644
 --- a/files/log-gearman-client.py
 +++ b/files/log-gearman-client.py
 @@ -15,7 +15,6 @@
@@ -51,20 +46,18 @@ index f2460b6..bd40b4d
          with daemon.DaemonContext(pidfile=pidfile):
              server.setup_logging()
 diff --git a/files/log-gearman-worker.py b/files/log-gearman-worker.py
-old mode 100644
-new mode 100755
-index 491b697..8ed81b7
+index 0bc92c9..954e342 100644
 --- a/files/log-gearman-worker.py
 +++ b/files/log-gearman-worker.py
-@@ -16,7 +16,6 @@
+@@ -15,7 +15,6 @@
+ # under the License.
  
  import argparse
- import cStringIO
 -import daemon
  import gear
- import gzip
  import json
-@@ -35,11 +34,6 @@ import yaml
+ import logging
+@@ -33,11 +32,6 @@ import yaml
  
  import paho.mqtt.publish as publish
  
@@ -76,7 +69,7 @@ index 491b697..8ed81b7
  
  def semi_busy_wait(seconds):
      # time.sleep() may return early. If it does sleep() again and repeat
-@@ -525,6 +519,11 @@ def main():
+@@ -543,6 +537,11 @@ def main():
          server.setup_logging()
          server.main()
      else:
@@ -89,5 +82,5 @@ index 491b697..8ed81b7
          with daemon.DaemonContext(pidfile=pidfile):
              server.setup_logging()
 -- 
-2.18.1
+2.31.1
 
