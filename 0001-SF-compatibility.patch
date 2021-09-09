@@ -1,4 +1,4 @@
-From 481aaace163cdd5be8d53f859ff28455e0b03ef5 Mon Sep 17 00:00:00 2001
+From 207132bf66cc103d61ec6447cc1e483651e0c7a1 Mon Sep 17 00:00:00 2001
 From: Fabien Boucher <fboucher@redhat.com>
 Date: Fri, 17 Mar 2017 15:46:13 +0000
 Subject: [PATCH] SF compatibility
@@ -44,5 +44,5 @@ index 37a0c96..f2460b6 100644
              statsd_port=statsd_port,
              statsd_prefix=statsd_prefix)
 -- 
-1.8.3.1
+2.31.1
 
