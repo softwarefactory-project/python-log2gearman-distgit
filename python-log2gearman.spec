@@ -13,6 +13,8 @@ URL:            https://opendev.org/opendev/${uname}
 Source0:        https://opendev.org/opendev/%{uname}/archive/%{commit0}.tar.gz
 Source1:        log-gearman-client.service
 Source2:        log-gearman-worker.service
+Source3:        log-gearman-client.logrotate
+Source4:        log-gearman-worker.logrotate
 
 Patch0:         0001-SF-compatibility.patch
 Patch1:         0001-Do-not-import-daemon-in-forground.patch
@@ -65,17 +67,23 @@ install -p -D -m 0755 files/log-gearman-worker.py %{buildroot}%{_bindir}/
 install -p -D -m 0644 %{SOURCE1} %{buildroot}%{_unitdir}/log-gearman-client.service
 install -p -D -m 0644 %{SOURCE2} %{buildroot}%{_unitdir}/log-gearman-worker.service
 
+# Install logrotate
+install -p -D -m 644 %{SOURCE3} %{buildroot}%{_sysconfdir}/logrotate.d/log-gearman-client
+install -p -D -m 644 %{SOURCE4} %{buildroot}%{_sysconfdir}/logrotate.d/log-gearman-worker
+
 %files client
 %{_bindir}/log-gearman-client.py
 %dir %attr(0750, joblogsclient, joblogsclient) %{_var}/log/log-gearman-client
 %{_unitdir}/log-gearman-client.service
 %config(noreplace) %{_sysconfdir}/log-gearman-client
+%config(noreplace) %{_sysconfdir}/logrotate.d/log-gearman-client
 
 %files worker
 %{_bindir}/log-gearman-worker.py
 %dir %attr(0750, joblogsworker, joblogsworker) %{_var}/log/log-gearman-worker
 %{_unitdir}/log-gearman-worker.service
 %config(noreplace) %{_sysconfdir}/log-gearman-worker
+%config(noreplace) %{_sysconfdir}/logrotate.d/log-gearman-worker
 
 %pre client
 getent group joblogsclient >/dev/null || groupadd -r joblogsclient
@@ -109,6 +117,9 @@ exit 0
 %systemd_postun log-gearman-worker.service
 
 %changelog
+* Tue Nov 23 2021 Daniel Pawlik <dpawlik@redhat.com> - 0.1-7
+- Add logrotate config files
+
 * Thu Sep 09 2021 Daniel Pawlik <dpawlik@redhat.com> - 0.1-6
 - Bump to commit 89bfe00dda0b9761bd79b0aa1ac2092940f0f11d
 - Add requirements
